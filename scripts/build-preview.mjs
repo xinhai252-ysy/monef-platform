@@ -1,0 +1,10 @@
+import {spawnSync} from 'node:child_process';
+import {cpSync,mkdirSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const command=process.platform==='win32'?'pnpm.cmd':'pnpm';
+const built=spawnSync(command,['build'],{cwd:path.join(root,'frontend'),env:{...process.env,VITE_PREVIEW_MODE:'true'},stdio:'inherit',shell:process.platform==='win32'});
+if(built.status!==0)process.exit(built.status??1);
+mkdirSync(path.join(root,'dist'),{recursive:true});
+cpSync(path.join(root,'frontend','dist'),path.join(root,'dist'),{recursive:true});

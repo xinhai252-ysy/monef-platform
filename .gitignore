@@ -1,0 +1,14 @@
+**/node_modules/
+**/target/
+**/data/
+**/dist/
+dist/
+release/
+.env
+.env.local
+**/*.log
+**/*.tsbuildinfo
+.idea/
+.vscode/
+backend/src/main/resources/static/
+.openai/execution-profile.json

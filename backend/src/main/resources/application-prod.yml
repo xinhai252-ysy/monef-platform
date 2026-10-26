@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:3306/${MYSQL_DATABASE:monef}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    username: ${MYSQL_USER:monef}
+    password: ${MYSQL_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      timeout: 2s
+  session:
+    redis:
+      namespace: monef:sessions
+monef:
+  seed-demo: ${SEED_DEMO:false}
+  fx-demo: ${FX_DEMO:false}
