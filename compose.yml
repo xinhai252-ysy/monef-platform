@@ -7,6 +7,9 @@ services:
       MYSQL_USER: monef
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    # 仅供本机 IDEA 后端和数据库客户端连接，不对局域网开放。
+    ports:
+      - "127.0.0.1:${MONEF_LOCAL_MYSQL_PORT:-13306}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -19,6 +22,8 @@ services:
     image: redis:7.4-alpine
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${MONEF_LOCAL_REDIS_PORT:-16379}:6379"
     command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
     volumes:
       - redis-data:/data
@@ -44,6 +49,9 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SEED_DEMO: ${SEED_DEMO:-false}
       FX_DEMO: ${FX_DEMO:-false}
+      FX_LIVE_PROVIDER: ${FX_LIVE_PROVIDER:-exchangerate_dev}
+      TWELVE_DATA_API_KEY: ${TWELVE_DATA_API_KEY:-}
+      FX_REQUESTS_PER_MINUTE: ${FX_REQUESTS_PER_MINUTE:-7}
       AI_ENABLED: ${AI_ENABLED:-false}
       AI_PROVIDER: ${AI_PROVIDER:-none}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-not-configured}

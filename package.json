@@ -1,1 +1,15 @@
-{"name":"monef-finance-workspace","private":true,"version":"1.0.0","scripts":{"build":"node scripts/build-preview.mjs"}}
+{
+  "name": "monef-finance-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node scripts/build-preview.mjs",
+    "format": "prettier --write \"backend/src/**/*.java\" \"frontend/src/**/*.{ts,vue,css}\"",
+    "format:check": "prettier --check \"backend/src/**/*.java\" \"frontend/src/**/*.{ts,vue,css}\"",
+    "test:frontend": "pnpm --dir frontend test"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10",
+    "prettier-plugin-java": "2.11.0"
+  }
+}

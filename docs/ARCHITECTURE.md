@@ -6,17 +6,43 @@
 
 正常业务页面不会使用浏览器示例账本。只有显式编译 `VITE_PREVIEW_MODE=true` 时，才加载独立的 `demo.ts` 交互演示模块。在线 Sites 仅托管此演示，Java / MySQL / Redis 在用户环境部署。
 
-## 主要文件
+## 后端目录与依赖方向
 
-- `backend/src/main/java/com/monef/FinanceService.java`：账户与不可变流水、幂等、作废、余额。
-- `DashboardService.java`：数据库聚合、完整月序列、KPI 与支出分类。
-- `FxService.java`：Frankfurter 请求、历史持久化、Redis / 演示内存缓存。
-- `FinanceTools.java`：不带可控租户参数的两项只读能力。
-- `AiService.java`：受限模型循环、确定性摘要、审计和限流。
-- `SecurityConfig.java` / `TenantAccess.java`：会话、CSRF、权限、服务端企业身份。
-- `RateLimiter.java`：Redis Lua 原子计数与过期；演示使用本地窗口。
-- `frontend/src/App.vue`：六个工作区视图、表单、筛选与导出。
-- `frontend/src/components/`：趋势、换汇、助手组件。
+后端按 `controller → service → repository → entity` 分层。Repository 使用 Spring Data JPA，承担 DAO 的职责，不另外增加一层只转发方法的 DAO 实现。
+
+- `backend/src/main/java/com/monef/controller/`：认证、账户、交易、总览、汇率、AI、审计七个控制器。负责 HTTP 参数、校验、访问权限和调用服务。
+- `service/FinanceService.java`：账户与流水业务、幂等、作废、余额和事务。
+- `service/DashboardService.java`：数据库聚合、完整月序列、KPI 与支出分类。
+- `service/FxService.java`：Frankfurter 请求、历史持久化、Redis / 演示内存缓存。
+- `service/AuditService.java`：当前企业的审计分页和响应转换，控制器不直接访问数据库。
+- `service/FinanceTools.java`、`service/AiService.java`：受限只读工具、模型循环、数据摘要及审计。
+- `repository/`：每个 JPA Repository 独立文件，保留原有租户条件、行锁和聚合查询。
+- `entity/`：五个实体独立文件；字段私有，通过访问方法读取和修改；主键与乐观锁版本不提供外部设置方法。
+- `dto/`：独立的请求和响应记录，避免 HTTP 接口直接暴露数据库实体。
+- `config/`：Spring Security、JSON 金额序列化和 HTTP 客户端配置。
+- `security/`：服务端企业身份读取、Redis 原子限流和演示限流。
+- `exception/`：业务异常与统一 HTTP 错误响应。
+- `bootstrap/`：初始化管理员和可选演示数据。
+
+控制器不执行账本 SQL 或仓储查询，业务事务保留在服务层；认证控制器处理 HTTP 会话和安全上下文。此次结构调整没有改数据库迁移、表名、JSON 字段或 API 地址。
+
+## 前端目录与状态归属
+
+- `frontend/src/App.vue`：工作区布局、导航出口及页面组合。
+- `views/`：登录、总览、交易、账户和审计页面。
+- `components/layout/`：侧栏与工作区弹窗。
+- `components/`：趋势图、汇率换算与 AI 面板。
+- `composables/useSession.ts`：登录、会话恢复、退出、过期事件及卸载时的监听清理。
+- `composables/useFinanceWorkspace.ts`：当前工作区的数据加载、筛选、业务操作和表单状态。
+- `composables/useDashboardMetrics.ts`：从服务端统计数据计算展示指标和迷你图坐标。
+- `composables/workspaceContext.ts`：提供有类型的工作区上下文，页面共享当前工作区的响应式状态，不自行创建第二套账本状态。
+- `api.ts`：统一网络请求、Cookie、CSRF、超时和错误处理；`demo.ts` 仅用于显式开启的浏览器演示。
+
+页面负责展示与事件，组合式函数负责可复用状态和行为。工作区由根组件创建，其生命周期内只存在一个实例。
+
+## 代码格式
+
+项目根目录固定 Prettier 和 Java 插件版本，使用 `.prettierrc.json`。Java 使用四空格缩进，Vue / TypeScript 使用两空格；不压缩源代码。运行 `pnpm format` 统一格式，`pnpm format:check` 只检查。构建产物、数据库和依赖目录不参与格式化。
 
 ## 数据库
 

@@ -1,5 +1,7 @@
 # Monef · 企业智能财务分析与资金管理平台
 
+GitHub 上传准备、Windows 重启后的 Docker 部署与登录范围见 [GitHub 与部署说明](docs/GITHUB.md)。
+
 按 Monef 组件设计重建的全栈项目，包含可操作的 Vue 3 界面、Java 17 后端、数据库迁移、Docker Compose、测试与启动包。
 
 界面参考：[One Collective Design / One Week Wonders · Monef](https://dribbble.com/shots/27389006-UI-elements-for-Monef-Corporate-Finance-Dashboard)。这是独立实现，不是原作品源码；未打包参考设计中的摄影、手机渲染或素材。
@@ -37,6 +39,8 @@ java -jar ../release/monef-api-1.0.0.jar --spring.profiles.active=demo
 
 ## 已实现功能
 
+登录页支持注册姓名、邮箱和密码，注册后自动登录并创建独立空工作区。Docker 版本的账号与账本保存在 MySQL，密码保存 BCrypt 哈希，登录会话由 Redis 保存；Java demo 模式使用 H2。当前注册不包含邮件验证、企业邀请或密码找回。
+
 1. **财务数据管理**：创建账户、启用 / 停用账户、期初余额、收入 / 支出入账、分页、关键词 / 账户 / 状态 / 类型 / 月份筛选、交易详情和 CSV 导出。原流水不可篡改；纠错采用作废后重新入账，保留审计记录。
 2. **财务统计**：数据库按月聚合、12 个月补零序列、收入 / 支出 / 净现金流 / 收支结余率、环比、支出分类，前端可切换 6 / 12 个月和净现金流视图。
 3. **多币种**：USD、EUR、GBP、CNY、JPY、SGD、HKD、AUD、CAD、CHF；Frankfurter 日汇率查询、历史日期查询、Redis 缓存、MySQL 历史记录、金额换算。页面显示汇率日期、来源与缓存状态。
@@ -73,6 +77,10 @@ docker compose ps
 数据库与 Redis 不映射宿主机端口；前端默认只监听 `127.0.0.1:8088`。对外提供服务时，在受控网络配置 HTTPS 反向代理并设置 `COOKIE_SECURE=true`。Compose 数据卷持久化数据库与 Redis；普通 `docker compose down` 不删除数据卷。
 
 ## 启用 Spring AI
+
+最新多币种换算也支持 Twelve Data 分钟行情。在根目录 `.env` 中设置 `FX_LIVE_PROVIDER=twelvedata` 和服务端 `TWELVE_DATA_API_KEY` 后，重新创建后端与前端容器。密钥不得使用 `VITE_` 前缀或提交 Git。该模式每次计算直接查询行情，不使用一小时汇率缓存；Redis 仍负责会话、用户限流和供应商全局调用预算，`FX_REQUESTS_PER_MINUTE` 默认 7，可按实际套餐调整。报价时间与请求时间分别保留，较早报价会在页面提示；市场休市或报价未变化时结果可能相同。缺密钥、额度不足或供应商失败会明确报错，不回退成参考价冒充分钟行情。
+
+默认 `FX_LIVE_PROVIDER=exchangerate_dev` 使用无需密钥、十五分钟延迟的指示性换算行情，页面必须展示来源链接、延迟和仅供参考提示；它不用于实际交易、结算、财务报表或账本入账。Redis 对该服务实施全局每分钟 7 次、每小时 90 次调用预算，不缓存该报价一小时。`frankfurter` 选项保留每日参考价；历史日期查询、交易入账快照继续使用原有每日参考价。分钟行情不写入每日观察记录，已入账历史数据不重算。真实服务启用需用户提供有效密钥并确认套餐权限，单元测试使用模拟供应商响应。
 
 在服务器 `.env` 设置：
 

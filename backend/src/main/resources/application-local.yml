@@ -1,0 +1,23 @@
+# IDEA / 本机 Java 运行：与 Docker 后端共用 MySQL、Redis 和用户数据。
+# 从项目根目录或 backend/ 启动均可读取根目录的 .env；密码不写入源码。
+spring:
+  config:
+    import:
+      - "optional:file:../.env[.properties]"
+      - "optional:file:./.env[.properties]"
+  datasource:
+    url: jdbc:mysql://127.0.0.1:${MONEF_LOCAL_MYSQL_PORT:13306}/${MYSQL_DATABASE:monef}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    username: ${MYSQL_USER:monef}
+    password: ${MYSQL_PASSWORD}
+  data:
+    redis:
+      host: 127.0.0.1
+      port: ${MONEF_LOCAL_REDIS_PORT:16379}
+      password: ${REDIS_PASSWORD}
+      timeout: 2s
+  session:
+    redis:
+      namespace: monef:sessions
+server:
+  address: 127.0.0.1
+  port: 8081

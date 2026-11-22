@@ -11,7 +11,9 @@ spring:
   application:
     name: monef-api
   profiles:
-    default: demo
+    # 两行保留一行生效。IDEA 默认连接 MySQL；H2 仅用于显式演示。
+    default: local
+    # default: demo
   jpa:
     open-in-view: false
     hibernate:
@@ -28,6 +30,13 @@ spring:
   ai:
     model:
       chat: ${AI_PROVIDER:none}
+      # 项目只使用聊天模型，关闭未使用模块，空 API Key 不阻止普通业务启动。
+      audio:
+        speech: none
+        transcription: none
+      embedding: none
+      image: none
+      moderation: none
     openai:
       api-key: ${OPENAI_API_KEY:not-configured}
       base-url: ${OPENAI_BASE_URL:https://api.openai.com}
@@ -55,3 +64,9 @@ monef:
   admin-email: ${MONEF_ADMIN_EMAIL:}
   admin-password: ${MONEF_ADMIN_PASSWORD:}
   fx-url: https://api.frankfurter.dev
+  # 最新换算可接分钟行情；历史查询和账本入账仍使用每日参考汇率。
+  fx-live-provider: ${FX_LIVE_PROVIDER:exchangerate_dev}
+  fx-delayed-url: https://api.exchangerate.dev
+  fx-live-api-key: ${TWELVE_DATA_API_KEY:}
+  fx-live-url: https://api.twelvedata.com
+  fx-live-requests-per-minute: ${FX_REQUESTS_PER_MINUTE:7}
